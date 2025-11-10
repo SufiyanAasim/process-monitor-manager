@@ -1,0 +1,22 @@
+Access:
+cd "/home/m-taha/OS Project"
+
+Commands:
+Monitor Bash File: chmod +x monitor.sh
+Modules Bash File: chmod +x modules/*.sh
+GUI Bash File: chmod +x monitor_gui.sh
+Combined Bash File Execution: chmod +x "/home/m-taha/OS Project/monitor.sh" && chmod +x "/home/m-taha/OS Project/modules/"*.sh
+GUI Bash File (for all scripts): chmod +x monitor.sh monitor_gui.sh modules/*.sh
+
+Executable File:
+./monitor.sh
+./monitor_gui.sh
+
+Apts Installed:
+Overall: sudo apt update
+For CLI: sudo apt install procps psmisc tree
+For GUI: sudo apt install zenity -y
+
+For Running On Preference:
+CLI: ./monitor.sh
+GUI: ./monitor.sh --gui
