@@ -1,0 +1,19 @@
+name: Security report
+description: Report a security vulnerability
+labels: [security]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Do not describe the vulnerability here.** This form is public.
+
+        Report vulnerabilities privately by emailing **sufiyanaasim@outlook.com**.
+        See [SECURITY.md](../../SECURITY.md) for what to include.
+
+  - type: checkboxes
+    id: acknowledge
+    attributes:
+      label: Acknowledgement
+      options:
+        - label: I have emailed the vulnerability details privately and am not including them in this issue.
+          required: true
