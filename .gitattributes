@@ -1,0 +1,15 @@
+# Auto-detect text files and normalize to LF in the repository.
+* text=auto eol=lf
+
+# Shell scripts must stay LF — a CRLF shebang line breaks execution on Linux.
+*.sh text eol=lf
+monitor.sh text eol=lf
+monitor_gui.sh text eol=lf
+
+*.py text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+LICENSE text eol=lf
+Makefile text eol=lf

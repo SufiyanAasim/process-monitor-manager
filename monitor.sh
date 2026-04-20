@@ -27,7 +27,10 @@ show_menu() {
     echo "3. Suspend Process"
     echo "4. Resume Process"
     echo "5. Show Process Tree"
-    echo "6. Exit"
+    echo "6. Search Process"
+    echo "7. Show Alerts (High CPU/MEM)"
+    echo "8. Live Dashboard"
+    echo "9. Exit"
     echo "============================"
 }
 

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240" role="img" aria-label="Process Monitor &amp; Manager logo">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="pulse" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="4" y="4" width="232" height="232" rx="36" fill="url(#bg)" stroke="#334155" stroke-width="2"/>
+
+  <!-- window chrome bar -->
+  <path d="M4 40 V40 a36 36 0 0 1 36 -36 H200 a36 36 0 0 1 36 36 V64 H4 Z" fill="#0b1220"/>
+
+  <!-- traffic-light dots: kill / suspend / resume -->
+  <circle cx="38" cy="32" r="10" fill="#ef4444"/>
+  <circle cx="72" cy="32" r="10" fill="#eab308"/>
+  <circle cx="106" cy="32" r="10" fill="#22c55e"/>
+
+  <!-- live pulse / heartbeat line -->
+  <polyline points="28,150 66,150 82,110 100,190 118,66 136,150 176,150 192,128 210,150"
+            fill="none" stroke="url(#pulse)" stroke-width="9"
+            stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- baseline dots either side of the pulse, echoing a process list -->
+  <circle cx="28" cy="150" r="4" fill="#475569"/>
+  <circle cx="210" cy="150" r="4" fill="#475569"/>
+</svg>
