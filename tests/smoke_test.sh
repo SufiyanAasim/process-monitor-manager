@@ -458,16 +458,19 @@ check "GUI sub-dialogs expose Back, main menu exposes Exit" $?
 # --- zenity actually honours the button-relabel flags on the dialog types we
 # use them with. Zenity prints "<flag> is not supported for this dialog" and
 # ignores the flag rather than failing, so a silently-dropped Back button would
-# otherwise look identical to a working one. Skipped without a display.
-if command -v zenity &>/dev/null && [[ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]]; then
+# otherwise look identical to a working one. Option validation runs before GTK
+# connects to the display, so unsetting DISPLAY/WAYLAND_DISPLAY checks flags
+# headlessly without popping up windows or waiting for timeouts.
+if command -v zenity &>/dev/null; then
     (
+        unset DISPLAY WAYLAND_DISPLAY
         REPORT_FILE=$(mktemp)
         echo "sample" > "$REPORT_FILE"
         UNSUPPORTED=$(
             {
                 timeout 2 zenity --text-info --filename="$REPORT_FILE" --ok-label="Back" --cancel-label="Back"
                 timeout 2 zenity --list --column=PID --column=Command 1 sh --cancel-label="Back"
-                timeout 2 zenity --entry --text="q" --cancel-label="Back"
+                timeout 2 zenity --entry --text="Enter process name or PID:" --cancel-label="Back"
             } 2>&1 | grep -i "not supported for this dialog"
         )
         rm -f "$REPORT_FILE"
@@ -475,7 +478,7 @@ if command -v zenity &>/dev/null && [[ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]];
     )
     check "zenity accepts --ok-label/--cancel-label on the dialogs the GUI uses" $?
 else
-    echo "SKIP: zenity button-flag check (no display)"
+    echo "SKIP: zenity button-flag check (zenity not installed)"
 fi
 
 # --- config file precedence: default < config file < env var ---
