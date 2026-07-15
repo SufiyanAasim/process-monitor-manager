@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Process Monitor and Manager icon">
+  <defs>
+    <linearGradient id="iconBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="iconPulse" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="64" height="64" rx="13" fill="url(#iconBg)"/>
+
+  <polyline points="5,34 19,34 26,20 33,49 40,11 47,34 59,34"
+            fill="none" stroke="url(#iconPulse)" stroke-width="8"
+            stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

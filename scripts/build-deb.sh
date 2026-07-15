@@ -7,7 +7,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$SCRIPT_DIR"
 
-VERSION="${1:?Usage: build-deb.sh <version, e.g. 4.0.0>}"
+VERSION="${1:?Usage: build-deb.sh <version, e.g. 5.0.0>}"
 PKG_NAME="process-monitor-manager"
 
 if ! command -v dpkg-deb &>/dev/null; then
@@ -19,15 +19,22 @@ BUILD_DIR="$(mktemp -d)"
 STAGE="$BUILD_DIR/${PKG_NAME}_${VERSION}"
 trap 'rm -rf "$BUILD_DIR"' EXIT
 
-mkdir -p "$STAGE/DEBIAN" "$STAGE/usr/lib/$PKG_NAME/modules" "$STAGE/usr/bin"
+mkdir -p "$STAGE/DEBIAN" "$STAGE/usr/lib/$PKG_NAME/modules" "$STAGE/usr/lib/$PKG_NAME/assets" "$STAGE/usr/bin"
 
 cp monitor.sh monitor_gui.sh "$STAGE/usr/lib/$PKG_NAME/"
 cp modules/*.sh modules/*.py "$STAGE/usr/lib/$PKG_NAME/modules/"
+cp assets/*.svg "$STAGE/usr/lib/$PKG_NAME/assets/"
 chmod +x "$STAGE/usr/lib/$PKG_NAME"/*.sh "$STAGE/usr/lib/$PKG_NAME/modules"/*.sh
 
+# No 'cd' here on purpose. Up to v4.0.0 the wrapper had to cd into the install
+# directory because monitor.sh sourced its modules relative to the working
+# directory; v5.0.0 resolves them from ${BASH_SOURCE[0]} instead, so the cd is
+# both unnecessary and harmful — it dropped the user into a root-owned
+# directory, which is where "Export to CSV" would then try (and fail) to write.
+# Running from the user's own working directory puts the CSV where they expect.
 cat > "$STAGE/usr/bin/$PKG_NAME" <<WRAPPER
 #!/bin/bash
-cd "/usr/lib/$PKG_NAME" && exec ./monitor.sh "\$@"
+exec "/usr/lib/$PKG_NAME/monitor.sh" "\$@"
 WRAPPER
 chmod +x "$STAGE/usr/bin/$PKG_NAME"
 

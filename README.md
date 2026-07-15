@@ -8,7 +8,7 @@
 
 [![Bash](https://img.shields.io/badge/Bash-4.0%2B-4EAA25?style=flat&logo=gnu-bash&logoColor=white)](https://www.gnu.org/software/bash/)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
-[![Version](https://img.shields.io/badge/version-4.0.0%20Signal-7c3aed?style=flat)](docs/releases/v4.0.0.md)
+[![Version](https://img.shields.io/badge/version-5.0.0%20Beacon-7c3aed?style=flat)](docs/releases/v5.0.0.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e?style=flat)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Ubuntu%20%7C%20Linux-64748b?style=flat)]()
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-0ea5e9?style=flat)](CONTRIBUTING.md)
@@ -57,7 +57,10 @@ Not yet checked in — see [docs/images/](docs/images/) for how to add them. In 
 - Kill, suspend (`SIGSTOP`), and resume (`SIGCONT`) any process you own
 
 ### 🖥️ Dual Interface
-- Menu-driven CLI (`monitor.sh`) and a Zenity-based GUI (`monitor.sh --gui`) — same feature set, either way
+- Menu-driven CLI (`monitor.sh`) and a Zenity-based GUI (`monitor.sh --gui`) — same feature set, either way, with a project-icon window and a Credits screen with a clickable GitHub link
+
+### ⚙️ Persistent Configuration
+- Set alert/color thresholds once in `~/.config/process-monitor-manager/config` instead of exporting an environment variable every run
 
 ---
 
@@ -139,15 +142,24 @@ From either mode, the **Live Dashboard** option launches `modules/dashboard.py` 
 
 ## ⚙️ Configuration
 
-No configuration files — the only runtime option is the `--gui` flag — but the alert/color thresholds are overridable via environment variables:
+The only runtime flag is `--gui`. Alert/color thresholds are configurable two ways — an environment variable always wins if set, otherwise a persisted config file is used, otherwise the defaults apply:
 
 | Variable | Default | Description |
 |----------|---------|--------------|
-| `PMM_HIGH_THRESHOLD` | `50` | %CPU/%MEM at or above this shows red and counts as an alert |
-| `PMM_MED_THRESHOLD` | `20` | %CPU at or above this shows yellow (CLI/GUI only — the dashboard uses `PMM_HIGH_THRESHOLD` for its red/yellow split too) |
+| `PMM_HIGH_THRESHOLD` | `50` | %CPU/%MEM at or above this counts as an alert (CLI, GUI, dashboard) and shows red (CLI, dashboard — the GUI never color-codes, since Zenity's text widget can't render ANSI colors) |
+| `PMM_MED_THRESHOLD` | `20` | %CPU at or above this shows yellow — CLI and dashboard only. Has no effect in GUI mode, which only ever reports alerts (`PMM_HIGH_THRESHOLD`), never colorizes. |
 
+**One-off, via environment variable:**
 ```bash
 PMM_HIGH_THRESHOLD=80 PMM_MED_THRESHOLD=40 ./monitor.sh
+PMM_HIGH_THRESHOLD=80 PMM_MED_THRESHOLD=40 python3 modules/dashboard.py
+```
+
+**Persistent, via config file** (read by both the Bash modules and `dashboard.py`; an environment variable set at runtime still overrides it):
+```bash
+mkdir -p ~/.config/process-monitor-manager
+cp config/process-monitor-manager.example ~/.config/process-monitor-manager/config
+# then edit ~/.config/process-monitor-manager/config
 ```
 
 ---
@@ -157,11 +169,11 @@ PMM_HIGH_THRESHOLD=80 PMM_MED_THRESHOLD=40 ./monitor.sh
 There's no `.exe` equivalent for a Bash/Python Linux tool, but there are two real packaged-artifact options:
 
 ```bash
-./scripts/package-release.sh 4.0.0   # or: make package VERSION=4.0.0
-# → process-monitor-manager-v4.0.0.tar.gz — extract and run ./monitor.sh directly
+./scripts/package-release.sh 5.0.0   # or: make package VERSION=5.0.0
+# → process-monitor-manager-v5.0.0.tar.gz — extract and run ./monitor.sh directly
 
-./scripts/build-deb.sh 4.0.0         # or: make deb VERSION=4.0.0
-# → process-monitor-manager_4.0.0_all.deb — sudo apt install ./process-monitor-manager_4.0.0_all.deb
+./scripts/build-deb.sh 5.0.0         # or: make deb VERSION=5.0.0
+# → process-monitor-manager_5.0.0_all.deb — sudo apt install ./process-monitor-manager_5.0.0_all.deb
 #   installs a `process-monitor-manager` command on your PATH
 ```
 
@@ -180,7 +192,10 @@ Not applicable. This tool inspects and signals *host* processes by PID — runni
 ```
 process-monitor-manager/
 ├── assets/
-│   └── logo.svg               # Project logo
+│   ├── logo.svg               # Detailed project logo (README artwork)
+│   └── icon.svg               # Simplified mark, legible at GUI icon size
+├── config/
+│   └── process-monitor-manager.example  # Copy to ~/.config/process-monitor-manager/config
 ├── modules/
 │   ├── monitor_module.sh    # Process info, search, alerts, tree, colorizing
 │   ├── manage_module.sh     # Kill, suspend, resume
@@ -278,15 +293,19 @@ See [ROADMAP.md](ROADMAP.md) for what's shipped and what's planned next.
 
 **Why isn't there a Windows-native version?** It shells out to `ps`, `pstree`, and POSIX signals (`SIGSTOP`/`SIGCONT`) — none of which exist natively on Windows. Use WSL.
 
-**Can I change the 50%/20% alert and color thresholds?** Yes — set `PMM_HIGH_THRESHOLD` / `PMM_MED_THRESHOLD` before running (see the Configuration section above). There's no config-file option, only environment variables.
+**Can I change the 50%/20% alert and color thresholds?** Yes, two ways — set `PMM_HIGH_THRESHOLD` / `PMM_MED_THRESHOLD` for one run, or persist them in `~/.config/process-monitor-manager/config` (see the Configuration section above). An environment variable always overrides the config file.
 
 **Why does "Live Dashboard" do nothing in the GUI?** No terminal emulator was found — see [Troubleshooting](docs/troubleshooting/Troubleshooting.md#live-dashboard-gui-action-does-nothing).
+
+**Why won't it let me suspend/kill a PID I entered?** As of `v5.0.0`, Kill/Suspend/Resume validate that the PID is numeric and refuse to target the running session's own process (suspending your own shell would freeze it with no way to resume from inside the session). Enter a different, real PID.
+
+**Why doesn't clicking "Open GitHub" in Credits do anything?** `xdg-open` isn't installed — install it with `sudo apt install xdg-utils`, or visit the GitHub link shown in the Credits text directly.
 
 ---
 
 ## 🩺 Troubleshooting
 
-See [docs/troubleshooting/Troubleshooting.md](docs/troubleshooting/Troubleshooting.md) for fixes to common issues (broken module paths, missing `pstree`/`zenity`, GUI dashboard launch failures, permission errors).
+See [docs/troubleshooting/Troubleshooting.md](docs/troubleshooting/Troubleshooting.md) for fixes to common issues (broken module paths, missing `pstree`/`zenity`, GUI dashboard launch failures, permission errors, invalid/self-PID rejections).
 
 ---
 
@@ -307,27 +326,38 @@ See [SUPPORT.md](SUPPORT.md) for where to ask questions, report bugs, or get hel
 <table>
   <tr>
     <td align="center">
-      <a href="https://github.com/13eeCoder">
-        <img src="https://github.com/13eeCoder.png" width="72" alt="13eeCoder"/><br/>
-        <sub><b>Muhammad Taha Siddiqui</b></sub>
-      </a><br/>
-      <sub>Original Author · Core Bash Scripting</sub>
-    </td>
-    <td align="center">
       <a href="https://github.com/SufiyanAasim">
         <img src="https://github.com/SufiyanAasim.png" width="72" alt="SufiyanAasim"/><br/>
         <sub><b>Sufiyan Aasim</b></sub>
       </a><br/>
-      <sub>Maintainer · Feature Development · Docs</sub>
+      <sub>Author &amp; Maintainer</sub><br/>
+      <sub>CLI · GUI · Live Dashboard · Packaging · Docs</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/13eeCoder">
+        <img src="https://github.com/13eeCoder.png" width="72" alt="13eeCoder"/><br/>
+        <sub><b>Muhammad Taha Siddiqui</b></sub>
+      </a><br/>
+      <sub>Contributor</sub><br/>
+      <sub>Process control — kill · suspend · resume</sub>
     </td>
   </tr>
 </table>
+
+| Area | Owner |
+|------|-------|
+| `monitor.sh`, `monitor_gui.sh` — CLI and GUI entry points | [@SufiyanAasim](https://github.com/SufiyanAasim) |
+| `modules/monitor_module.sh` — process info, search, alerts, tree, CSV export | [@SufiyanAasim](https://github.com/SufiyanAasim) |
+| `modules/input_module.sh` — CLI menu dispatch | [@SufiyanAasim](https://github.com/SufiyanAasim) |
+| `modules/dashboard.py` — Live Dashboard (curses) | [@SufiyanAasim](https://github.com/SufiyanAasim) |
+| `scripts/`, `.github/` — packaging, CI, release automation | [@SufiyanAasim](https://github.com/SufiyanAasim) |
+| `modules/manage_module.sh` — process control (kill/suspend/resume, PID validation) | [@13eeCoder](https://github.com/13eeCoder) |
 
 ---
 
 ## 📄 License
 
-[MIT License](LICENSE) © 2025-2026 Process Monitor & Manager Contributors.
+[MIT License](LICENSE) © 2026 Process Monitor & Manager Contributors.
 
 ---
 

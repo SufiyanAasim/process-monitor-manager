@@ -18,7 +18,7 @@ Codenames follow a single consistent theme across all releases.
 
 Format:
 ```
-v4.1.0
+v5.1.0
 Codename: <Name>
 ```
 
@@ -38,7 +38,7 @@ Update the version string in:
 Add a new section to `CHANGELOG.md` following the [Keep a Changelog](https://keepachangelog.com/) format:
 
 ```markdown
-## [4.1.0] — "Codename" — YYYY-MM-DD
+## [5.1.0] — "Codename" — YYYY-MM-DD
 
 ### Added
 ### Changed
@@ -51,7 +51,7 @@ Add a new section to `CHANGELOG.md` following the [Keep a Changelog](https://kee
 
 ## 4. Write the release doc
 
-Create `docs/releases/v4.1.0.md` using [v4.0.0.md](docs/releases/v4.0.0.md) as a template. Include: codename, overview, objectives, categorized change list (with an emoji + title subsection per notable item), architecture progress notes, known limitations, a compatibility table, and contributors. Close with **🚀 What's Next** if another version is already planned, or **🏁 Release Summary** if this is the current shipped release with nothing next in active development. Update the previous release doc's own closing section from **🏁 Release Summary** to **🚀 What's Next** now that it's no longer the latest.
+Create `docs/releases/v5.1.0.md` using [v5.0.0.md](docs/releases/v5.0.0.md) as a template. Include: codename, overview, objectives, categorized change list (with an emoji + title subsection per notable item), architecture progress notes, known limitations, a compatibility table, and contributors. Close with **🚀 What's Next** if another version is already planned, or **🏁 Release Summary** if this is the current shipped release with nothing next in active development. Update the previous release doc's own closing section from **🏁 Release Summary** to **🚀 What's Next** now that it's no longer the latest.
 
 ---
 
@@ -70,14 +70,14 @@ All checks must pass before tagging. There's no need to manually build the relea
 
 ```bash
 git add -A
-git commit -m "release: v4.1.0 - Codename"
-git tag v4.1.0
+git commit -m "release: v5.1.0 - Codename"
+git tag v5.1.0
 git push origin main --tags
 ```
 
 Include co-authors in the commit message if applicable:
 ```
-release: v4.1.0 - Codename
+release: v5.1.0 - Codename
 
 Co-authored-by: Contributor Name <their-github-registered-email@example.com>
 ```

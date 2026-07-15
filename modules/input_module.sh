@@ -10,8 +10,16 @@ handle_user_input() {
         6) search_process ;;
         7) show_alerts ;;
         8) launch_dashboard ;;
-        9) export_csv ;;
-        10) echo "Exiting..."; exit 0 ;;
+        9)
+            local csv_file
+            if csv_file=$(export_csv); then
+                echo "Exported current process snapshot to $csv_file"
+            else
+                echo "Failed to export CSV — is the current directory writable?"
+            fi
+            ;;
+        10) show_credits ;;
+        11) echo "Exiting..."; exit 0 ;;
         *) echo "Invalid option!" ;;
     esac
 }

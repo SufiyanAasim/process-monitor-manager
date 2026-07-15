@@ -4,17 +4,19 @@
 # Process Monitor & Manager - Entry Script
 # =====================
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Check for GUI Flag
 if [[ "$1" == "--gui" ]]; then
     echo "Launching GUI mode..."
-    bash ./monitor_gui.sh
+    bash "$SCRIPT_DIR/monitor_gui.sh"
     exit 0
 fi
 
 # CLI Mode Starts Here
-source modules/monitor_module.sh
-source modules/manage_module.sh
-source modules/input_module.sh
+source "$SCRIPT_DIR/modules/monitor_module.sh"
+source "$SCRIPT_DIR/modules/manage_module.sh"
+source "$SCRIPT_DIR/modules/input_module.sh"
 
 # CLI Menu Function
 show_menu() {
@@ -31,13 +33,18 @@ show_menu() {
     echo "7. Show Alerts (High CPU/MEM)"
     echo "8. Live Dashboard"
     echo "9. Export to CSV"
-    echo "10. Exit"
+    echo "10. Credits"
+    echo "11. Exit"
     echo "============================"
 }
 
 # Main Loop
 while true; do
     show_menu
-    read -rp "Enter your choice: " choice
+    if ! read -rp "Enter your choice: " choice; then
+        echo ""
+        echo "Exiting..."
+        exit 0
+    fi
     handle_user_input "$choice"
 done

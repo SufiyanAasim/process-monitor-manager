@@ -19,7 +19,8 @@
 7. Show Alerts (High CPU/MEM)
 8. Live Dashboard
 9. Export to CSV
-10. Exit
+10. Credits
+11. Exit
 ============================
 ```
 
@@ -30,6 +31,8 @@
 - **7 — Show Alerts.** Lists every process currently at or above the CPU/MEM threshold.
 - **8 — Live Dashboard.** Launches `modules/dashboard.py` — see below.
 - **9 — Export to CSV.** Writes the current process table to `process_snapshot_<timestamp>.csv` in the working directory.
+- **10 — Credits.** Contributors, the GitHub repository link, and a contact email.
+- **11 — Exit.**
 
 ## GUI mode
 
@@ -37,7 +40,21 @@
 ./monitor.sh --gui
 ```
 
-A Zenity radiolist mirrors every CLI action above, including "Export to CSV". "Live Dashboard" opens the dashboard in a detected terminal emulator (`xterm`, `gnome-terminal`, `konsole`, or `xfce4-terminal` — install one if none is found).
+A Zenity radiolist mirrors every CLI action above, including "Export to CSV" and "Credits" — with a few differences from the CLI:
+
+- **Kill / Suspend / Resume pick a process from a list** instead of asking you to type a PID. "Resume" only lists processes that are currently suspended.
+- **No color coding.** Zenity's text widget can't render ANSI colors, so GUI output is plain text — `PMM_HIGH_THRESHOLD` still controls what counts as an alert, but `PMM_MED_THRESHOLD` has no effect in GUI mode.
+- **Every dialog shows the project icon** (`assets/icon.svg`) as its window icon.
+
+### Getting around
+
+Every action opens a dialog and returns you to the main menu when you're done:
+
+- **Back** — in any sub-dialog (process pickers, the search prompt, Credits, and report views), returns to the main menu without doing anything.
+- **Exit** — pick "Exit" from the menu, click the menu's **Exit** button, or just close the window with **X**.
+- **"Credits" has a clickable "Open GitHub" button** that launches the repository in your default browser via `xdg-open`, in addition to the contributor/contact text shown in the CLI version.
+
+"Live Dashboard" opens the dashboard in a detected terminal emulator (`xterm`, `gnome-terminal`, `konsole`, or `xfce4-terminal` — install one if none is found).
 
 ## Live Dashboard
 
@@ -59,12 +76,20 @@ An auto-refreshing (every 2 seconds) full-screen view, color-coded the same way 
 
 ## Configuring alert/color thresholds
 
-The 50%/20% CPU/MEM cutoffs used for coloring and alerts apply everywhere (CLI, GUI, dashboard) and are overridable via environment variables:
+`PMM_HIGH_THRESHOLD` (default `50`) controls what counts as an alert everywhere (CLI, GUI, dashboard) and shows red in the CLI and dashboard. `PMM_MED_THRESHOLD` (default `20`) controls the yellow cutoff in the CLI and dashboard only — the GUI never color-codes, so it has no effect there.
 
+**One-off**, via environment variable (highest precedence):
 ```bash
 PMM_HIGH_THRESHOLD=80 PMM_MED_THRESHOLD=40 ./monitor.sh
 PMM_HIGH_THRESHOLD=80 python3 modules/dashboard.py
 ```
+
+**Persistent**, via config file (used when no environment variable is set):
+```bash
+mkdir -p ~/.config/process-monitor-manager
+cp config/process-monitor-manager.example ~/.config/process-monitor-manager/config
+```
+Edit the copied file's `PMM_HIGH_THRESHOLD=`/`PMM_MED_THRESHOLD=` lines. Both the Bash modules and `dashboard.py` read it.
 
 ## Example: finding and stopping a runaway process
 

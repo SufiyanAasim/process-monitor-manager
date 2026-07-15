@@ -1,2 +1,5 @@
-# Default owners for everything in the repo.
-*  @SufiyanAasim @13eeCoder
+# Default owner for everything not matched below.
+*                               @SufiyanAasim
+
+# Process control — kill/suspend/resume signal handling and PID validation.
+/modules/manage_module.sh       @13eeCoder

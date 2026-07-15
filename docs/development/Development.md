@@ -36,8 +36,8 @@ There is no automated unit-test suite (the project is a thin wrapper over `ps`/`
 ## Building packaged releases
 
 ```bash
-./scripts/package-release.sh 4.0.0   # requires the vX.Y.Z tag to already exist locally
-./scripts/build-deb.sh 4.0.0          # requires dpkg-dev (sudo apt install dpkg-dev)
+./scripts/package-release.sh 5.0.0   # requires the vX.Y.Z tag to already exist locally
+./scripts/build-deb.sh 5.0.0          # requires dpkg-dev (sudo apt install dpkg-dev)
 ```
 
 Both take a version string, not a tag name (no leading `v`). `package-release.sh` builds directly from the git tag via `git archive`, so tag the release before packaging it. See [RELEASE.md](../../RELEASE.md) for the full release process, and [Deployment.md](../deployment/Deployment.md) for how end users install the resulting artifacts.
@@ -47,7 +47,10 @@ Both take a version string, not a tag name (no leading `v`). `package-release.sh
 ```
 process-monitor-manager/
 ├── assets/
-│   └── logo.svg              # Project logo
+│   ├── logo.svg             # Detailed project logo (README artwork)
+│   └── icon.svg             # Simplified mark, legible at GUI icon size
+├── config/
+│   └── process-monitor-manager.example  # Copy to ~/.config/process-monitor-manager/config
 ├── modules/
 │   ├── monitor_module.sh   # Process info, search, alerts, tree, colorizing
 │   ├── manage_module.sh    # Kill, suspend, resume
@@ -95,22 +98,22 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 | `revert:` | Reverts a previous commit |
 
 ```
-feat(dashboard): add CSV export shortcut
+feat(packaging): add .rpm build script
 fix(gui): handle empty search query
 docs(readme): update installation section
-refactor(modules): extract color threshold constants
+refactor(dashboard): extract sort-field cycling into its own method
 ```
 
-One commit per release (`release: v4.1.0 - <Codename>`). No noise commits for minor doc or config tweaks — stage everything into the release commit.
+One commit per release (`release: v5.1.0 - <Codename>`). No noise commits for minor doc or config tweaks — stage everything into the release commit.
 
 ## Branch naming
 
 ```
 main
-release/v4.1.0
+release/v5.1.0
 hotfix/search-empty-query
-feature/csv-export
-feature/dashboard-sorting
+feature/rpm-packaging
+feature/process-tree-filtering
 bugfix/dashboard-parsing
 refactor/color-thresholds
 docs/architecture-update

@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# Config file precedence: explicit environment variable > config file > default.
+# Capture any env vars the caller already set before the config file can touch them.
+_ENV_PMM_HIGH_THRESHOLD="${PMM_HIGH_THRESHOLD:-}"
+_ENV_PMM_MED_THRESHOLD="${PMM_MED_THRESHOLD:-}"
+
+readonly PMM_CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/process-monitor-manager/config"
+if [[ -f "$PMM_CONFIG_FILE" ]]; then
+    # shellcheck disable=SC1090
+    source "$PMM_CONFIG_FILE"
+fi
+
+[[ -n "$_ENV_PMM_HIGH_THRESHOLD" ]] && PMM_HIGH_THRESHOLD="$_ENV_PMM_HIGH_THRESHOLD"
+[[ -n "$_ENV_PMM_MED_THRESHOLD" ]] && PMM_MED_THRESHOLD="$_ENV_PMM_MED_THRESHOLD"
+
 readonly HIGH_THRESHOLD="${PMM_HIGH_THRESHOLD:-50}"
 readonly MED_THRESHOLD="${PMM_MED_THRESHOLD:-20}"
 
@@ -14,6 +28,8 @@ colorize_line() {
     local cpu
     cpu=$(awk '{print $NF}' <<< "$line")
     cpu=${cpu%%.*}
+    cpu=${cpu//[^0-9]/}
+    cpu=${cpu:-0}
 
     if (( cpu >= HIGH_THRESHOLD )); then
         printf '%s%s%s\n' "$COLOR_RED" "$line" "$COLOR_RESET"
@@ -44,7 +60,7 @@ search_process() {
     fi
 
     local matches
-    matches=$(ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%cpu | tail -n +2 | grep -i -- "$query")
+    matches=$(ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%cpu | tail -n +2 | grep -iF -- "$query")
 
     if [[ -z "$matches" ]]; then
         echo "No matching processes found for '$query'."
@@ -73,10 +89,20 @@ show_alerts() {
     done <<< "$alerts"
 }
 
+# Writes a CSV snapshot of the current process list to the current directory.
+# On success prints the filename and returns 0; on failure (an unwritable
+# directory, most likely) prints nothing and returns 1 — callers must check,
+# or they'll report success for a file that was never written.
+# Only the filename is printed so both the CLI and the GUI can word their own
+# message around it.
 export_csv() {
-    local outfile="process_snapshot_$(date +%Y%m%d_%H%M%S).csv"
+    local outfile
+    outfile="process_snapshot_$(date +%Y%m%d_%H%M%S).csv"
 
-    {
+    # Deliberately an if/else rather than `if ! { ... } > "$outfile"`: when the
+    # redirection itself fails, bash returns 1 for the whole construct and the
+    # `!` does not invert it, so the negated form silently never fires.
+    if {
         echo "PID,PPID,CMD,%MEM,%CPU"
         ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%cpu | tail -n +2 | awk '{
             cmd = ""
@@ -84,9 +110,29 @@ export_csv() {
             gsub(/"/, "\"\"", cmd)
             printf "%s,%s,\"%s\",%s,%s\n", $1, $2, cmd, $(NF - 1), $NF
         }'
-    } > "$outfile"
+    } 2>/dev/null > "$outfile"; then
+        echo "$outfile"
+    else
+        rm -f "$outfile" 2>/dev/null
+        return 1
+    fi
+}
 
-    echo "Exported current process snapshot to $outfile"
+show_credits() {
+    echo ""
+    echo "============================"
+    echo " Process Monitor & Manager "
+    echo "============================"
+    echo ""
+    echo "Sufiyan Aasim - Author & Maintainer"
+    echo "  GitHub:  https://github.com/SufiyanAasim"
+    echo "  Contact: sufiyanaasim@outlook.com"
+    echo ""
+    echo "Muhammad Taha Siddiqui - Contributor (process control)"
+    echo "  GitHub:  https://github.com/13eeCoder"
+    echo "  Contact: tahasiddiqui2100@gmail.com"
+    echo ""
+    echo "Repository: https://github.com/SufiyanAasim/process-monitor-manager"
 }
 
 launch_dashboard() {
