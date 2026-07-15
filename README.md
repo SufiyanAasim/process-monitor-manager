@@ -8,7 +8,7 @@
 
 [![Bash](https://img.shields.io/badge/Bash-4.0%2B-4EAA25?style=flat&logo=gnu-bash&logoColor=white)](https://www.gnu.org/software/bash/)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
-[![Version](https://img.shields.io/badge/version-3.0.0%20Pulse-7c3aed?style=flat)](docs/releases/v3.0.0.md)
+[![Version](https://img.shields.io/badge/version-4.0.0%20Signal-7c3aed?style=flat)](docs/releases/v4.0.0.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e?style=flat)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Ubuntu%20%7C%20Linux-64748b?style=flat)]()
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-0ea5e9?style=flat)](CONTRIBUTING.md)
@@ -37,7 +37,7 @@ Not yet checked in — see [docs/images/](docs/images/) for how to add them. In 
 - Filter the process table by name or PID, CLI or GUI
 
 ### 🚨 Alerts
-- One-shot report of every process currently above the 50% CPU/MEM threshold
+- One-shot report of every process currently above the CPU/MEM threshold (50% default, configurable)
 
 ### 📈 Live Dashboard
 - Auto-refreshing, curses-based terminal UI (`modules/dashboard.py`)
@@ -45,6 +45,13 @@ Not yet checked in — see [docs/images/](docs/images/) for how to add them. In 
 
 ### 🌳 Process Tree
 - Full hierarchy view via `pstree -p`
+
+### 📤 CSV Export
+- Snapshot the current process table to a timestamped `.csv` — CLI, GUI, or a keypress in the Live Dashboard
+
+### 🔀 Configurable Thresholds & Sorting
+- Alert/color thresholds overridable via `PMM_HIGH_THRESHOLD` / `PMM_MED_THRESHOLD` env vars
+- Live Dashboard sorts by CPU, MEM, or PID — cycle with a keypress
 
 ### ⚙️ Process Control
 - Kill, suspend (`SIGSTOP`), and resume (`SIGCONT`) any process you own
@@ -117,7 +124,7 @@ cd process-monitor-manager
 ./monitor.sh
 ```
 
-`scripts/install-deps.sh` runs `sudo apt install -y procps psmisc tree zenity` and makes the scripts executable. See [docs/deployment/Deployment.md](docs/deployment/Deployment.md) for manual steps, WSL setup, and other distributions.
+`scripts/install-deps.sh` runs `sudo apt install -y procps psmisc tree zenity` and makes the scripts executable. See [docs/deployment/Deployment.md](docs/deployment/Deployment.md) for manual steps, WSL setup, and other distributions — or skip cloning entirely and install a [packaged `.deb` or tarball](#-packaging--distribution) from the [Releases page](https://github.com/SufiyanAasim/process-monitor-manager/releases).
 
 ### Launch modes
 
@@ -132,7 +139,33 @@ From either mode, the **Live Dashboard** option launches `modules/dashboard.py` 
 
 ## ⚙️ Configuration
 
-No configuration files or environment variables — the only runtime option is the `--gui` flag. Alert/color thresholds (50% / 20%) are constants in [modules/monitor_module.sh](modules/monitor_module.sh); making them configurable is tracked in [ROADMAP.md](ROADMAP.md).
+No configuration files — the only runtime option is the `--gui` flag — but the alert/color thresholds are overridable via environment variables:
+
+| Variable | Default | Description |
+|----------|---------|--------------|
+| `PMM_HIGH_THRESHOLD` | `50` | %CPU/%MEM at or above this shows red and counts as an alert |
+| `PMM_MED_THRESHOLD` | `20` | %CPU at or above this shows yellow (CLI/GUI only — the dashboard uses `PMM_HIGH_THRESHOLD` for its red/yellow split too) |
+
+```bash
+PMM_HIGH_THRESHOLD=80 PMM_MED_THRESHOLD=40 ./monitor.sh
+```
+
+---
+
+## 📦 Packaging & Distribution
+
+There's no `.exe` equivalent for a Bash/Python Linux tool, but there are two real packaged-artifact options:
+
+```bash
+./scripts/package-release.sh 4.0.0   # or: make package VERSION=4.0.0
+# → process-monitor-manager-v4.0.0.tar.gz — extract and run ./monitor.sh directly
+
+./scripts/build-deb.sh 4.0.0         # or: make deb VERSION=4.0.0
+# → process-monitor-manager_4.0.0_all.deb — sudo apt install ./process-monitor-manager_4.0.0_all.deb
+#   installs a `process-monitor-manager` command on your PATH
+```
+
+Pushing a `v*` tag triggers [`.github/workflows/release.yml`](.github/workflows/release.yml), which builds both artifacts and attaches them to a GitHub Release automatically.
 
 ---
 
@@ -155,7 +188,9 @@ process-monitor-manager/
 │   └── dashboard.py         # ProcessManager + Dashboard classes (live TUI)
 ├── scripts/
 │   ├── install-deps.sh      # apt install + chmod helper
-│   └── lint.sh                # bash -n + shellcheck + py_compile
+│   ├── lint.sh                # bash -n + shellcheck + py_compile
+│   ├── package-release.sh    # git-archive tarball for GitHub Releases
+│   └── build-deb.sh           # builds a native .deb package
 ├── tests/
 │   └── smoke_test.sh          # Functional sanity checks
 ├── docs/
@@ -168,7 +203,7 @@ process-monitor-manager/
 │   └── releases/               # Per-version release notes
 ├── .github/
 │   ├── ISSUE_TEMPLATE/         # Bug, feature, docs, question, security templates
-│   ├── workflows/               # CI — shellcheck + syntax lint
+│   ├── workflows/               # CI (lint) + release (package + publish on tag push)
 │   ├── CODEOWNERS
 │   └── dependabot.yml
 ├── monitor.sh                    # CLI entry point
@@ -210,6 +245,8 @@ Not applicable — this is a local CLI/GUI tool with no network-facing API.
 | Key | Action |
 |-----|--------|
 | `/` | Search / filter by name or PID |
+| `o` | Cycle sort order — CPU → MEM → PID |
+| `e` | Export the current (filtered/sorted) view to CSV |
 | `k` | Kill a process by PID |
 | `s` | Suspend a process by PID |
 | `r` | Resume a process by PID |
@@ -231,7 +268,7 @@ Bug reports, feature requests, and PRs are welcome — see [CONTRIBUTING.md](CON
 
 ## 🗺️ Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for what's shipped and what's planned next (configurable thresholds, interactive dashboard sorting, CSV export).
+See [ROADMAP.md](ROADMAP.md) for what's shipped and what's planned next.
 
 ---
 
@@ -241,7 +278,7 @@ See [ROADMAP.md](ROADMAP.md) for what's shipped and what's planned next (configu
 
 **Why isn't there a Windows-native version?** It shells out to `ps`, `pstree`, and POSIX signals (`SIGSTOP`/`SIGCONT`) — none of which exist natively on Windows. Use WSL.
 
-**Can I change the 50%/20% alert and color thresholds?** Not yet from a config file — they're constants in [modules/monitor_module.sh](modules/monitor_module.sh). Configurable thresholds are on the [roadmap](ROADMAP.md).
+**Can I change the 50%/20% alert and color thresholds?** Yes — set `PMM_HIGH_THRESHOLD` / `PMM_MED_THRESHOLD` before running (see the Configuration section above). There's no config-file option, only environment variables.
 
 **Why does "Live Dashboard" do nothing in the GUI?** No terminal emulator was found — see [Troubleshooting](docs/troubleshooting/Troubleshooting.md#live-dashboard-gui-action-does-nothing).
 

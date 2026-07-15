@@ -1,18 +1,17 @@
 # Roadmap
 
-## v3.0.0 — Pulse ✅ Shipped
+## v4.0.0 — Signal ✅ Shipped
 
-- Search process by name or PID (CLI + GUI).
-- High CPU/MEM alert report.
-- Live auto-refreshing dashboard (`modules/dashboard.py`) with in-place search and signal controls.
-- Colorized CLI process output by CPU load.
-- Full open-source repository structure and documentation.
+- Configurable CPU/MEM alert thresholds via `PMM_HIGH_THRESHOLD`/`PMM_MED_THRESHOLD`.
+- Interactive dashboard sorting (CPU/MEM/PID).
+- CSV export (CLI, GUI, and dashboard).
+- Packaged `.tar.gz` and `.deb` releases, automated via `.github/workflows/release.yml`.
 
-## v3.1.0 — Signal (planned)
+## v4.1.0 — Unnamed (planned)
 
-- Configurable CPU/MEM alert thresholds (currently fixed at 50%).
-- Sort dashboard columns interactively (by PID, %CPU, %MEM).
-- Export the current process snapshot to CSV.
+- Config-file option for thresholds, as an alternative to environment variables.
+- `.rpm` packaging for Fedora/RHEL-based distributions.
+- Interactive process-tree filtering (highlight/collapse by search match).
 
 ## Ongoing
 

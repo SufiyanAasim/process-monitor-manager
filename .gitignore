@@ -10,3 +10,10 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+
+# Packaged release artifacts (built by scripts/package-release.sh, scripts/build-deb.sh)
+*.tar.gz
+*.deb
+
+# Exported process snapshots
+process_snapshot_*.csv

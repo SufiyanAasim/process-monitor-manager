@@ -2,6 +2,8 @@
 """Live process dashboard: auto-refreshing, searchable, color-coded by CPU/MEM."""
 
 import curses
+import datetime
+import os
 import subprocess
 
 
@@ -44,6 +46,15 @@ class ProcessManager:
         query = query.lower()
         return [p for p in processes if query in p.cmd.lower() or query == p.pid]
 
+    SORT_FIELDS = ("cpu", "mem", "pid")
+
+    def sort(self, processes, field):
+        if field == "pid":
+            return sorted(processes, key=lambda p: int(p.pid) if p.pid.isdigit() else 0)
+        if field == "mem":
+            return sorted(processes, key=lambda p: float(p.mem or 0), reverse=True)
+        return sorted(processes, key=lambda p: float(p.cpu or 0), reverse=True)
+
     def send_signal(self, pid, sig):
         try:
             subprocess.run(["kill", f"-{sig}", str(pid)], check=True,
@@ -52,16 +63,27 @@ class ProcessManager:
         except subprocess.CalledProcessError:
             return False
 
+    def export_csv(self, processes):
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"process_snapshot_{timestamp}.csv"
+        with open(filename, "w", newline="") as f:
+            f.write("PID,PPID,CMD,%MEM,%CPU\n")
+            for p in processes:
+                cmd = p.cmd.replace('"', '""')
+                f.write(f'{p.pid},{p.ppid},"{cmd}",{p.mem},{p.cpu}\n')
+        return filename
+
 
 class Dashboard:
     REFRESH_SECONDS = 2
-    HIGH_THRESHOLD = 50.0
-    MED_THRESHOLD = 20.0
+    HIGH_THRESHOLD = float(os.environ.get("PMM_HIGH_THRESHOLD", 50))
+    MED_THRESHOLD = float(os.environ.get("PMM_MED_THRESHOLD", 20))
 
     def __init__(self, manager):
         self.manager = manager
         self.query = ""
         self.message = ""
+        self.sort_field = "cpu"
 
     def color_for(self, cpu):
         try:
@@ -85,9 +107,9 @@ class Dashboard:
 
     def draw(self, stdscr, processes):
         stdscr.erase()
-        title = "Process Monitor - Live Dashboard  [/ search] [k kill] [s suspend] [r resume] [q quit]"
+        title = "Process Monitor - Live Dashboard  [/ search] [o sort] [e export] [k kill] [s suspend] [r resume] [q quit]"
         stdscr.addstr(0, 0, title[:curses.COLS - 1], curses.A_BOLD)
-        stdscr.addstr(1, 0, f"Filter: {self.query or '(none)'}   Refresh: {self.REFRESH_SECONDS}s")
+        stdscr.addstr(1, 0, f"Filter: {self.query or '(none)'}   Sort: {self.sort_field}   Refresh: {self.REFRESH_SECONDS}s")
         stdscr.addstr(2, 0, ProcessManager.HEADER[:curses.COLS - 1], curses.A_UNDERLINE)
 
         max_rows = curses.LINES - 5
@@ -110,6 +132,7 @@ class Dashboard:
 
         while True:
             processes = self.manager.filter(self.manager.fetch(), self.query)
+            processes = self.manager.sort(processes, self.sort_field)
             self.draw(stdscr, processes)
 
             key = stdscr.getch()
@@ -118,6 +141,13 @@ class Dashboard:
             elif key == ord('/'):
                 self.query = self.prompt(stdscr, "Search: ")
                 self.message = ""
+            elif key == ord('o'):
+                next_index = (ProcessManager.SORT_FIELDS.index(self.sort_field) + 1) % len(ProcessManager.SORT_FIELDS)
+                self.sort_field = ProcessManager.SORT_FIELDS[next_index]
+                self.message = f"Sorting by {self.sort_field}"
+            elif key == ord('e'):
+                filename = self.manager.export_csv(processes)
+                self.message = f"Exported to {filename}"
             elif key == ord('k'):
                 pid = self.prompt(stdscr, "Kill PID: ")
                 self.message = f"Killed {pid}" if self.manager.send_signal(pid, "TERM") else f"Failed to kill {pid}"

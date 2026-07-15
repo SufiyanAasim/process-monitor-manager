@@ -60,3 +60,23 @@ You most likely don't own that process. Re-run the tool with `sudo` to manage pr
 ```bash
 sudo ./monitor.sh
 ```
+
+---
+
+## `dpkg-deb not found` when running `scripts/build-deb.sh`
+
+Install the Debian packaging tools:
+```bash
+sudo apt install dpkg-dev
+```
+
+---
+
+## Threshold environment variables don't seem to change anything
+
+`PMM_HIGH_THRESHOLD`/`PMM_MED_THRESHOLD` must be set in the same shell invocation that runs the script — exporting them beforehand works too, but a `sudo ./monitor.sh` run in a different shell/session won't see variables set only in your regular user shell (`sudo` doesn't inherit your environment by default):
+```bash
+PMM_HIGH_THRESHOLD=80 ./monitor.sh          # OK
+export PMM_HIGH_THRESHOLD=80 && ./monitor.sh # also OK
+sudo PMM_HIGH_THRESHOLD=80 ./monitor.sh      # OK — passes it through to sudo explicitly
+```
