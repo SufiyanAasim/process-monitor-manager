@@ -7,6 +7,30 @@ import os
 import subprocess
 
 
+def _config_file_path():
+    config_home = os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
+    return os.path.join(config_home, "process-monitor-manager", "config")
+
+
+def _load_threshold(key, default):
+    """Environment variable > config file (KEY=VALUE lines) > default."""
+    env_value = os.environ.get(key)
+    if env_value is not None:
+        return float(env_value)
+
+    path = _config_file_path()
+    if os.path.isfile(path):
+        with open(path) as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith(f"{key}="):
+                    value = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    if value:
+                        return float(value)
+
+    return float(default)
+
+
 class Process:
     def __init__(self, pid, ppid, cmd, mem, cpu):
         self.pid = pid
@@ -44,7 +68,7 @@ class ProcessManager:
         if not query:
             return processes
         query = query.lower()
-        return [p for p in processes if query in p.cmd.lower() or query == p.pid]
+        return [p for p in processes if query in p.cmd.lower() or query in p.pid]
 
     SORT_FIELDS = ("cpu", "mem", "pid")
 
@@ -64,20 +88,28 @@ class ProcessManager:
             return False
 
     def export_csv(self, processes):
+        """Write a CSV snapshot to the working directory.
+
+        Returns the filename, or None if it couldn't be written — an
+        unwritable directory must not take the whole dashboard down with it.
+        """
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"process_snapshot_{timestamp}.csv"
-        with open(filename, "w", newline="") as f:
-            f.write("PID,PPID,CMD,%MEM,%CPU\n")
-            for p in processes:
-                cmd = p.cmd.replace('"', '""')
-                f.write(f'{p.pid},{p.ppid},"{cmd}",{p.mem},{p.cpu}\n')
+        try:
+            with open(filename, "w", newline="") as f:
+                f.write("PID,PPID,CMD,%MEM,%CPU\n")
+                for p in processes:
+                    cmd = p.cmd.replace('"', '""')
+                    f.write(f'{p.pid},{p.ppid},"{cmd}",{p.mem},{p.cpu}\n')
+        except OSError:
+            return None
         return filename
 
 
 class Dashboard:
     REFRESH_SECONDS = 2
-    HIGH_THRESHOLD = float(os.environ.get("PMM_HIGH_THRESHOLD", 50))
-    MED_THRESHOLD = float(os.environ.get("PMM_MED_THRESHOLD", 20))
+    HIGH_THRESHOLD = _load_threshold("PMM_HIGH_THRESHOLD", 50)
+    MED_THRESHOLD = _load_threshold("PMM_MED_THRESHOLD", 20)
 
     def __init__(self, manager):
         self.manager = manager
@@ -96,28 +128,77 @@ class Dashboard:
             return curses.color_pair(2)
         return curses.color_pair(3)
 
+    def _validate_pid(self, pid):
+        if not pid or not pid.isdigit():
+            return False, f"Invalid PID: '{pid}' (must be a positive number)"
+        if pid in (str(os.getpid()), str(os.getppid())):
+            return False, f"Refusing to signal PID {pid} - that's this dashboard's own process"
+        return True, ""
+
+    def _apply_signal(self, pid, sig, verb):
+        valid, error = self._validate_pid(pid)
+        if not valid:
+            return error
+        if self.manager.send_signal(pid, sig):
+            return f"{verb} {pid}"
+        return f"Failed to {verb.lower()} {pid}"
+
+    @staticmethod
+    def _addstr(stdscr, y, x, text, attr=0):
+        """Write text clipped to the window's *current* size.
+
+        Deliberately re-reads getmaxyx() on every call rather than trusting
+        curses.LINES/curses.COLS: those are captured at initscr and go stale
+        the moment the terminal is resized, so writing rows based on them
+        lands past the new last row and raises curses.error — killing the
+        whole dashboard. The try/except is a backstop for the same reason.
+        """
+        height, width = stdscr.getmaxyx()
+        if y < 0 or y >= height or x < 0 or x >= width:
+            return
+        clipped = text[:max(0, width - x - 1)]
+        if not clipped:
+            return
+        try:
+            stdscr.addstr(y, x, clipped, attr)
+        except curses.error:
+            pass
+
     def prompt(self, stdscr, label):
+        height, width = stdscr.getmaxyx()
         curses.echo()
-        stdscr.addstr(curses.LINES - 1, 0, " " * (curses.COLS - 1))
-        stdscr.addstr(curses.LINES - 1, 0, label)
-        stdscr.refresh()
-        value = stdscr.getstr(curses.LINES - 1, len(label)).decode("utf-8").strip()
-        curses.noecho()
-        return value
+        try:
+            self._addstr(stdscr, height - 1, 0, " " * width)
+            self._addstr(stdscr, height - 1, 0, label)
+            stdscr.refresh()
+            return stdscr.getstr(height - 1, len(label)).decode("utf-8").strip()
+        except curses.error:
+            return ""
+        finally:
+            # Leaving echo on would corrupt every later keypress.
+            curses.noecho()
 
     def draw(self, stdscr, processes):
         stdscr.erase()
-        title = "Process Monitor - Live Dashboard  [/ search] [o sort] [e export] [k kill] [s suspend] [r resume] [q quit]"
-        stdscr.addstr(0, 0, title[:curses.COLS - 1], curses.A_BOLD)
-        stdscr.addstr(1, 0, f"Filter: {self.query or '(none)'}   Sort: {self.sort_field}   Refresh: {self.REFRESH_SECONDS}s")
-        stdscr.addstr(2, 0, ProcessManager.HEADER[:curses.COLS - 1], curses.A_UNDERLINE)
+        height, _ = stdscr.getmaxyx()
 
-        max_rows = curses.LINES - 5
+        title = ("Process Monitor - Live Dashboard  [/ search] [o sort] "
+                 "[e export] [k kill] [s suspend] [r resume] [q quit]")
+        self._addstr(stdscr, 0, 0, title, curses.A_BOLD)
+        self._addstr(stdscr, 1, 0,
+                     f"Filter: {self.query or '(none)'}   "
+                     f"Sort: {self.sort_field}   Refresh: {self.REFRESH_SECONDS}s")
+        self._addstr(stdscr, 2, 0, ProcessManager.HEADER, curses.A_UNDERLINE)
+
+        # max(0, ...) matters: a terminal shorter than 5 rows would otherwise
+        # make this negative, and processes[:-n] silently drops rows from the
+        # end instead of showing none.
+        max_rows = max(0, height - 5)
         for i, proc in enumerate(processes[:max_rows]):
-            stdscr.addstr(3 + i, 0, proc.row()[:curses.COLS - 1], self.color_for(proc.cpu))
+            self._addstr(stdscr, 3 + i, 0, proc.row(), self.color_for(proc.cpu))
 
         if self.message:
-            stdscr.addstr(curses.LINES - 1, 0, self.message[:curses.COLS - 1])
+            self._addstr(stdscr, height - 1, 0, self.message)
         stdscr.refresh()
 
     def run(self, stdscr):
@@ -147,16 +228,17 @@ class Dashboard:
                 self.message = f"Sorting by {self.sort_field}"
             elif key == ord('e'):
                 filename = self.manager.export_csv(processes)
-                self.message = f"Exported to {filename}"
+                self.message = (f"Exported to {filename}" if filename
+                                else "Export failed - working directory is not writable")
             elif key == ord('k'):
                 pid = self.prompt(stdscr, "Kill PID: ")
-                self.message = f"Killed {pid}" if self.manager.send_signal(pid, "TERM") else f"Failed to kill {pid}"
+                self.message = self._apply_signal(pid, "TERM", "Killed")
             elif key == ord('s'):
                 pid = self.prompt(stdscr, "Suspend PID: ")
-                self.message = f"Suspended {pid}" if self.manager.send_signal(pid, "STOP") else f"Failed to suspend {pid}"
+                self.message = self._apply_signal(pid, "STOP", "Suspended")
             elif key == ord('r'):
                 pid = self.prompt(stdscr, "Resume PID: ")
-                self.message = f"Resumed {pid}" if self.manager.send_signal(pid, "CONT") else f"Failed to resume {pid}"
+                self.message = self._apply_signal(pid, "CONT", "Resumed")
 
 
 def main():

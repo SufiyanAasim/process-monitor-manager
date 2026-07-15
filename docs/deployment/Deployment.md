@@ -45,4 +45,4 @@ The scripts depend on GNU `ps` (from `procps`, not BusyBox/toybox), `pstree` (fr
 
 - **Docker.** This tool inspects and signals *host* processes (`kill`, `SIGSTOP`/`SIGCONT` by PID). Running it inside a container would only expose the container's own isolated process namespace, defeating the point of the tool — so no `Dockerfile`/`docker-compose.yml` is provided.
 - **Cloud deployment.** There is no server component; nothing here runs as a hosted service.
-- **`.env` files.** Runtime configuration is limited to two threshold environment variables (`PMM_HIGH_THRESHOLD`, `PMM_MED_THRESHOLD` — see [README → Configuration](../../README.md#️-configuration)); there's no config-file loading or `.env` support.
+- **`.env` files.** There's no dotenv auto-loading from the working directory. Runtime configuration is limited to two thresholds (`PMM_HIGH_THRESHOLD`, `PMM_MED_THRESHOLD`), settable via environment variable or a persistent config file at `~/.config/process-monitor-manager/config` — see [README → Configuration](../../README.md#️-configuration).

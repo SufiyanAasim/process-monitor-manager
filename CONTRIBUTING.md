@@ -31,7 +31,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 **Examples:**
 ```
-feat(dashboard): add CSV export shortcut
+feat(packaging): add .rpm build script
 fix(gui): handle empty search query
 docs(readme): update installation section
 ```

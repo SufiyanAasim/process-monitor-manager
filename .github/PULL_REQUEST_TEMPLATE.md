@@ -14,8 +14,8 @@
 
 ## Testing
 
-- [ ] `bash -n monitor.sh monitor_gui.sh modules/*.sh` passes.
-- [ ] `python3 -m py_compile modules/dashboard.py` passes (if `dashboard.py` changed).
+- [ ] `./scripts/lint.sh` passes.
+- [ ] `./tests/smoke_test.sh` passes.
 - [ ] Manually tested on: <!-- distro / WSL details -->
 
 ## Checklist

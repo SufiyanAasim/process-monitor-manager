@@ -1,0 +1,19 @@
+# Process Monitor & Manager — example config file.
+#
+# Copy this to:
+#   ~/.config/process-monitor-manager/config
+# (or $XDG_CONFIG_HOME/process-monitor-manager/config if you've set that)
+#
+#   mkdir -p ~/.config/process-monitor-manager
+#   cp config/process-monitor-manager.example ~/.config/process-monitor-manager/config
+#
+# An explicit environment variable always overrides the value set here, e.g.
+# `PMM_HIGH_THRESHOLD=90 ./monitor.sh` wins even if this file sets 70.
+
+# %CPU/%MEM at or above this counts as an alert, and shows red in the CLI
+# and Live Dashboard (default: 50)
+PMM_HIGH_THRESHOLD=50
+
+# %CPU at or above this shows yellow in the CLI and Live Dashboard —
+# has no effect in GUI mode, which never color-codes (default: 20)
+PMM_MED_THRESHOLD=20

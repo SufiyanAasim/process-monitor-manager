@@ -8,6 +8,8 @@ on:
 jobs:
   package:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -16,6 +18,25 @@ jobs:
       - name: Determine version
         id: version
         run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      # Derived from the release notes rather than hardcoded, so the doc and the
+      # GitHub release can't disagree about whether a version is a pre-release.
+      - name: Determine pre-release status
+        id: prerelease
+        run: |
+          notes="docs/releases/${GITHUB_REF_NAME}.md"
+          if [[ ! -f "$notes" ]]; then
+            echo "::error::Missing release notes: $notes"
+            exit 1
+          fi
+          if grep -qi '^> \*\*Pre-release\.\*\*' "$notes"; then
+            echo "value=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Ensure scripts are executable
+        run: chmod +x monitor.sh monitor_gui.sh modules/*.sh scripts/*.sh tests/*.sh
 
       - name: Build tarball
         run: ./scripts/package-release.sh "${{ steps.version.outputs.version }}"
@@ -33,3 +54,4 @@ jobs:
             process-monitor-manager-${{ github.ref_name }}.tar.gz
             process-monitor-manager_${{ steps.version.outputs.version }}_all.deb
           body_path: docs/releases/${{ github.ref_name }}.md
+          prerelease: ${{ steps.prerelease.outputs.value }}
