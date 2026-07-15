@@ -181,6 +181,20 @@ Pushing a `v*` tag triggers [`.github/workflows/release.yml`](.github/workflows/
 
 ---
 
+## 📜 Release History
+
+We follow [Keep a Changelog](CHANGELOG.md) and [Semantic Versioning](https://semver.org/). Each release includes detailed narrative write-ups under `docs/releases/`:
+
+| Version | Codename | Release Date | Status | Key Highlights | Release Notes |
+|---------|----------|--------------|--------|----------------|---------------|
+| `v5.0.0` | **Beacon** | 2026-07-15 | Stable | Deep bug/robustness audit, Credits screens, config-file thresholds, `icon.svg` | [v5.0.0.md](docs/releases/v5.0.0.md) |
+| `v4.0.0` | **Signal** | 2026-07-15 | Stable | Configurable env thresholds, dashboard sorting, CSV export, `.deb`/`.tar.gz` CI automation | [v4.0.0.md](docs/releases/v4.0.0.md) |
+| `v3.0.0` | **Pulse** | 2026-04-20 | Stable | Process search, high-load alerts, live auto-refreshing curses dashboard (`dashboard.py`) | [v3.0.0.md](docs/releases/v3.0.0.md) |
+| `v2.0.0` | **Bedrock** | 2026-01-15 | Stable | Verified baseline: robust module sourcing, signal handling, and core CLI/GUI stabilization | [v2.0.0.md](docs/releases/v2.0.0.md) |
+| `v1.0.0` | **Spark** | 2025-11-10 | Pre-release | Initial project scaffold: `monitor.sh` CLI, `monitor_gui.sh` Zenity GUI, and 3 core module scripts | [v1.0.0.md](docs/releases/v1.0.0.md) |
+
+---
+
 ## 🐳 Docker & ☁️ Cloud Deployment
 
 Not applicable. This tool inspects and signals *host* processes by PID — running it in a container would only see the container's own isolated processes, and there's no server component to deploy to the cloud. See [docs/deployment/Deployment.md](docs/deployment/Deployment.md#not-applicable-to-this-project) for the full reasoning.
