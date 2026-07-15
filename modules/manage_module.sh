@@ -1,4 +1,10 @@
 #!/bin/bash
+# ==============================================================================
+# Process Control Module (modules/manage_module.sh)
+# @author: Muhammad Taha Siddiqui (@13eeCoder) <tahasiddiqui2100@gmail.com>
+# Responsibilities: Process termination (SIGTERM/SIGKILL), suspension (SIGSTOP),
+# resumption (SIGCONT), and strict PID/self-session validation (_validate_pid).
+# ==============================================================================
 
 # Validates that $1 looks like a real PID and isn't this shell's own process,
 # printing a friendly message and returning non-zero if not.
