@@ -1,7 +1,7 @@
 #!/bin/bash
 
-readonly HIGH_THRESHOLD=50
-readonly MED_THRESHOLD=20
+readonly HIGH_THRESHOLD="${PMM_HIGH_THRESHOLD:-50}"
+readonly MED_THRESHOLD="${PMM_MED_THRESHOLD:-20}"
 
 readonly COLOR_RED=$'\033[1;31m'
 readonly COLOR_YELLOW=$'\033[1;33m'
@@ -71,6 +71,22 @@ show_alerts() {
     while IFS= read -r line; do
         colorize_line "$line"
     done <<< "$alerts"
+}
+
+export_csv() {
+    local outfile="process_snapshot_$(date +%Y%m%d_%H%M%S).csv"
+
+    {
+        echo "PID,PPID,CMD,%MEM,%CPU"
+        ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%cpu | tail -n +2 | awk '{
+            cmd = ""
+            for (i = 3; i <= NF - 2; i++) cmd = cmd (i > 3 ? " " : "") $i
+            gsub(/"/, "\"\"", cmd)
+            printf "%s,%s,\"%s\",%s,%s\n", $1, $2, cmd, $(NF - 1), $NF
+        }'
+    } > "$outfile"
+
+    echo "Exported current process snapshot to $outfile"
 }
 
 launch_dashboard() {

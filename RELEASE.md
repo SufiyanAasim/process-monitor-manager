@@ -18,8 +18,8 @@ Codenames follow a single consistent theme across all releases.
 
 Format:
 ```
-v3.1.0
-Codename: Signal
+v4.1.0
+Codename: <Name>
 ```
 
 ---
@@ -38,7 +38,7 @@ Update the version string in:
 Add a new section to `CHANGELOG.md` following the [Keep a Changelog](https://keepachangelog.com/) format:
 
 ```markdown
-## [3.1.0] — "Signal" — YYYY-MM-DD
+## [4.1.0] — "Codename" — YYYY-MM-DD
 
 ### Added
 ### Changed
@@ -51,19 +51,18 @@ Add a new section to `CHANGELOG.md` following the [Keep a Changelog](https://kee
 
 ## 4. Write the release doc
 
-Create `docs/releases/v3.1.0.md` using [v3.0.0.md](docs/releases/v3.0.0.md) as a template. Include: codename, overview, objectives, categorized change list (with an emoji + title subsection per notable item), architecture progress notes, known limitations, a compatibility table, and contributors. Close with **🚀 What's Next** if another version is already planned, or **🏁 Release Summary** if this is the current shipped release with nothing next in active development.
+Create `docs/releases/v4.1.0.md` using [v4.0.0.md](docs/releases/v4.0.0.md) as a template. Include: codename, overview, objectives, categorized change list (with an emoji + title subsection per notable item), architecture progress notes, known limitations, a compatibility table, and contributors. Close with **🚀 What's Next** if another version is already planned, or **🏁 Release Summary** if this is the current shipped release with nothing next in active development. Update the previous release doc's own closing section from **🏁 Release Summary** to **🚀 What's Next** now that it's no longer the latest.
 
 ---
 
-## 5. Sanity-check the scripts
+## 5. Sanity-check and package
 
 ```bash
-bash -n monitor.sh monitor_gui.sh modules/*.sh
-python3 -m py_compile modules/dashboard.py
-shellcheck monitor.sh monitor_gui.sh modules/*.sh
+./scripts/lint.sh
+./tests/smoke_test.sh
 ```
 
-All checks must pass before tagging.
+All checks must pass before tagging. There's no need to manually build the release artifacts (`.tar.gz`/`.deb`) — pushing the tag does that automatically (step 7).
 
 ---
 
@@ -71,14 +70,14 @@ All checks must pass before tagging.
 
 ```bash
 git add -A
-git commit -m "release: v3.1.0 - Signal"
-git tag v3.1.0
+git commit -m "release: v4.1.0 - Codename"
+git tag v4.1.0
 git push origin main --tags
 ```
 
 Include co-authors in the commit message if applicable:
 ```
-release: v3.1.0 - Signal
+release: v4.1.0 - Codename
 
 Co-authored-by: Contributor Name <their-github-registered-email@example.com>
 ```
@@ -87,7 +86,9 @@ Co-authored-by: Contributor Name <their-github-registered-email@example.com>
 
 ## 7. GitHub release
 
-Create a GitHub release from the pushed tag, using the corresponding `docs/releases/v<Version>.md` file as the description.
+Pushing the `v*` tag triggers [`.github/workflows/release.yml`](.github/workflows/release.yml), which builds the `.tar.gz` (`scripts/package-release.sh`) and `.deb` (`scripts/build-deb.sh`), then publishes a GitHub Release with both attached and `docs/releases/v<Version>.md` as the description.
+
+To verify: navigate to the GitHub Releases page, confirm both artifacts are attached, and spot-check one by downloading and running it.
 
 ---
 

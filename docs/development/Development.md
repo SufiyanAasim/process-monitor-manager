@@ -33,6 +33,15 @@ There is no automated unit-test suite (the project is a thin wrapper over `ps`/`
 ./tests/smoke_test.sh       # basic functional sanity checks
 ```
 
+## Building packaged releases
+
+```bash
+./scripts/package-release.sh 4.0.0   # requires the vX.Y.Z tag to already exist locally
+./scripts/build-deb.sh 4.0.0          # requires dpkg-dev (sudo apt install dpkg-dev)
+```
+
+Both take a version string, not a tag name (no leading `v`). `package-release.sh` builds directly from the git tag via `git archive`, so tag the release before packaging it. See [RELEASE.md](../../RELEASE.md) for the full release process, and [Deployment.md](../deployment/Deployment.md) for how end users install the resulting artifacts.
+
 ## Project structure
 
 ```
@@ -46,7 +55,9 @@ process-monitor-manager/
 │   └── dashboard.py        # ProcessManager + Dashboard classes (live TUI)
 ├── scripts/
 │   ├── install-deps.sh     # apt install + chmod helper
-│   └── lint.sh              # bash -n + shellcheck + py_compile
+│   ├── lint.sh               # bash -n + shellcheck + py_compile
+│   ├── package-release.sh   # git-archive tarball for GitHub Releases
+│   └── build-deb.sh          # builds a native .deb package
 ├── tests/
 │   └── smoke_test.sh        # Basic sanity checks
 ├── docs/
@@ -90,13 +101,13 @@ docs(readme): update installation section
 refactor(modules): extract color threshold constants
 ```
 
-One commit per release (`release: v3.1.0 - <Codename>`). No noise commits for minor doc or config tweaks — stage everything into the release commit.
+One commit per release (`release: v4.1.0 - <Codename>`). No noise commits for minor doc or config tweaks — stage everything into the release commit.
 
 ## Branch naming
 
 ```
 main
-release/v3.1.0
+release/v4.1.0
 hotfix/search-empty-query
 feature/csv-export
 feature/dashboard-sorting

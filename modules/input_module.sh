@@ -10,7 +10,8 @@ handle_user_input() {
         6) search_process ;;
         7) show_alerts ;;
         8) launch_dashboard ;;
-        9) echo "Exiting..."; exit 0 ;;
+        9) export_csv ;;
+        10) echo "Exiting..."; exit 0 ;;
         *) echo "Invalid option!" ;;
     esac
 }

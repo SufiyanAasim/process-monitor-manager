@@ -30,7 +30,8 @@ show_menu() {
     echo "6. Search Process"
     echo "7. Show Alerts (High CPU/MEM)"
     echo "8. Live Dashboard"
-    echo "9. Exit"
+    echo "9. Export to CSV"
+    echo "10. Exit"
     echo "============================"
 }
 

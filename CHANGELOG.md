@@ -6,6 +6,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Thi
 
 ---
 
+## [4.0.0] — "Signal" — 2026-07-15
+
+### Added
+- **Configurable alert/color thresholds.** `PMM_HIGH_THRESHOLD` and `PMM_MED_THRESHOLD` environment variables override the 50%/20% defaults across the CLI, GUI, and Live Dashboard.
+- **Interactive dashboard sorting.** Press `o` in the Live Dashboard to cycle sorting by CPU, MEM, or PID.
+- **CSV export.** Snapshot the current process table to a timestamped `.csv` — CLI option 9, GUI "Export to CSV", or `e` in the Live Dashboard.
+- **Packaged releases.** `scripts/package-release.sh` (git-archive tarball) and `scripts/build-deb.sh` (native `.deb` via `dpkg-deb`), wired into `.github/workflows/release.yml` so pushing a `v*` tag builds and attaches both to a GitHub Release automatically.
+- `make package VERSION=x.y.z` and `make deb VERSION=x.y.z` Makefile targets.
+
+### Changed
+- **Breaking: CLI menu renumbered.** `monitor.sh`'s menu gained a "9. Export to CSV" option ahead of Exit, which moved from `9` to `10`. Any script or muscle-memory piping `9` into the CLI to exit will now trigger a CSV export instead — hence the major version bump.
+- `monitor_gui.sh` radiolist extended with an "Export to CSV" action.
+
+---
+
 ## [3.0.0] — "Pulse" — 2026-04-20
 
 ### Added
@@ -51,6 +66,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Thi
 
 ---
 
+[4.0.0]: docs/releases/v4.0.0.md
 [3.0.0]: docs/releases/v3.0.0.md
 [2.0.0]: docs/releases/v2.0.0.md
 [1.0.0]: docs/releases/v1.0.0.md

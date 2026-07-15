@@ -2,7 +2,23 @@
 
 Process Monitor & Manager is a local system tool, not a networked service — "deployment" here means installing it on a machine you'll run it on directly.
 
-## Ubuntu / Debian-based Linux
+## Packaged installs (no git clone needed)
+
+Download from the [Releases page](https://github.com/SufiyanAasim/process-monitor-manager/releases):
+
+```bash
+# .deb — installs a `process-monitor-manager` command on your PATH
+sudo apt install ./process-monitor-manager_<version>_all.deb
+
+# Tarball — extract and run directly
+tar -xzf process-monitor-manager-v<version>.tar.gz
+cd process-monitor-manager-v<version>
+./monitor.sh
+```
+
+Both are built by [`scripts/build-deb.sh`](../../scripts/build-deb.sh) and [`scripts/package-release.sh`](../../scripts/package-release.sh); see [RELEASE.md](../../RELEASE.md) for how they're produced and attached to each tagged release.
+
+## Ubuntu / Debian-based Linux (from source)
 
 ```bash
 git clone https://github.com/SufiyanAasim/process-monitor-manager.git
@@ -29,4 +45,4 @@ The scripts depend on GNU `ps` (from `procps`, not BusyBox/toybox), `pstree` (fr
 
 - **Docker.** This tool inspects and signals *host* processes (`kill`, `SIGSTOP`/`SIGCONT` by PID). Running it inside a container would only expose the container's own isolated process namespace, defeating the point of the tool — so no `Dockerfile`/`docker-compose.yml` is provided.
 - **Cloud deployment.** There is no server component; nothing here runs as a hosted service.
-- **Environment variables / `.env`.** The tool takes no runtime configuration beyond CLI flags (`--gui`) and menu choices — see [ROADMAP.md](../../ROADMAP.md) for the planned configurable alert threshold.
+- **`.env` files.** Runtime configuration is limited to two threshold environment variables (`PMM_HIGH_THRESHOLD`, `PMM_MED_THRESHOLD` — see [README → Configuration](../../README.md#️-configuration)); there's no config-file loading or `.env` support.

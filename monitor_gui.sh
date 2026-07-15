@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly ALERT_THRESHOLD=50
+readonly ALERT_THRESHOLD="${PMM_HIGH_THRESHOLD:-50}"
 
 while true; do
     ACTION=$(zenity --list --title="Process Manager GUI" \
@@ -12,6 +12,7 @@ while true; do
         FALSE "Search a Process" \
         FALSE "Show Alerts (High CPU/MEM)" \
         FALSE "Live Dashboard" \
+        FALSE "Export to CSV" \
         FALSE "Kill a Process" \
         FALSE "Suspend a Process" \
         FALSE "Resume a Process" \
@@ -89,6 +90,21 @@ while true; do
             fi
 
             "$TERMINAL" -e python3 "$SCRIPT_DIR/modules/dashboard.py" &
+            ;;
+
+        "Export to CSV")
+            OUTFILE="process_snapshot_$(date +%Y%m%d_%H%M%S).csv"
+            {
+                echo "PID,PPID,CMD,%MEM,%CPU"
+                ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%cpu | tail -n +2 | awk '{
+                    cmd = ""
+                    for (i = 3; i <= NF - 2; i++) cmd = cmd (i > 3 ? " " : "") $i
+                    gsub(/"/, "\"\"", cmd)
+                    printf "%s,%s,\"%s\",%s,%s\n", $1, $2, cmd, $(NF - 1), $NF
+                }'
+            } > "$OUTFILE"
+
+            zenity --info --text="Exported current process snapshot to:\n$(pwd)/$OUTFILE"
             ;;
 
         "Kill a Process")
