@@ -1,8 +1,9 @@
 #!/bin/bash
-
-# =====================
-# Process Monitor & Manager - Entry Script
-# =====================
+# ==============================================================================
+# Process Monitor & Manager — CLI Entry Point (monitor.sh)
+# @author: Sufiyan Aasim (@SufiyanAasim) <sufiyanaasim@outlook.com>
+# Responsibilities: CLI mode setup, module sourcing, and config pre-loading.
+# ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

@@ -1,4 +1,10 @@
 #!/bin/bash
+# ==============================================================================
+# Process Monitor & Manager — Zenity GUI Entry Point (monitor_gui.sh)
+# @author: Sufiyan Aasim (@SufiyanAasim) <sufiyanaasim@outlook.com>
+# Responsibilities: Zenity GUI radiolist, dialog orchestration, Credits, and
+# all user-facing GUI workflows (search, alerts, CSV export, dashboard launch).
+# ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/modules/monitor_module.sh"

@@ -1,4 +1,9 @@
 #!/bin/bash
+# ==============================================================================
+# CLI Menu Input Dispatch Module (modules/input_module.sh)
+# @author: Sufiyan Aasim (@SufiyanAasim) <sufiyanaasim@outlook.com>
+# Responsibilities: Interactive menu loop and CLI command dispatching.
+# ==============================================================================
 
 handle_user_input() {
     case "$1" in

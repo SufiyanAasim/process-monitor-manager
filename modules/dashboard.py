@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# ==============================================================================
+# Live Curses TUI Dashboard (modules/dashboard.py)
+# @author: Sufiyan Aasim (@SufiyanAasim) <sufiyanaasim@outlook.com>
+# Responsibilities: Auto-refreshing curses process view, interactive sorting,
+# search filtering, CSV export, color-coded CPU/MEM thresholds, and signal
+# dispatch (kill/suspend/resume) with PID validation.
+# ==============================================================================
 """Live process dashboard: auto-refreshing, searchable, color-coded by CPU/MEM."""
 
 import curses

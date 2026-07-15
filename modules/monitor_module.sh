@@ -1,4 +1,10 @@
 #!/bin/bash
+# ==============================================================================
+# Process Monitoring & Reporting Module (modules/monitor_module.sh)
+# @author: Sufiyan Aasim (@SufiyanAasim) <sufiyanaasim@outlook.com>
+# Responsibilities: Process inspection, searching, alerting, tree views, CSV export,
+# and threshold-based CPU/MEM colorization.
+# ==============================================================================
 
 # Config file precedence: explicit environment variable > config file > default.
 # Capture any env vars the caller already set before the config file can touch them.
